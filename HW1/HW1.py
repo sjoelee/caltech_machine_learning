@@ -1,16 +1,64 @@
 import random
 import numpy as np
 import matplotlib.pyplot as plt
+import copy
 
 def generate_dataset(num_of_points=10):
-  X = np.ones((num_of_points, 1)) # these are 1 because of x0 = 1 for the constant term
-  X = np.c_(X, (np.random.uniform(-1, 1, (num_of_points, 2))))
+  X = np.ones((num_of_points, 3)) # these are 1 because of x0 = 1 for the constant term
+  X[:, 1:] = np.random.uniform(-1, 1, (num_of_points, 2))
   return X
 
 def classify(X, w, y=None):
   return np.sign(np.dot(X, w))
 
-def average_PLA_iterate(number_of_iterations=1 , num_training_points=10):
+def get_average_num_iterations(num_runs=1, num_training_points=10):
+  num_iteration = np.zeros((num_runs, 1))
+  index = 0
+
+  run_number = 0
+  while run_number < num_runs:
+    num_iteration[index] = iterate(num_training_points)
+    index += 1
+    run_number += 1
+
+  return np.sum(num_iteration)/num_runs
+
+def iterate(num_training_points=10, plot=False):
+  # create target function and training set
+  coeff = np.random.uniform(-1, 1, (3, 1))
+  X = generate_dataset(num_training_points)
+  y_true = classify(X, coeff)
+
+  # initialize weights
+  w = np.zeros((3, 1))
+  num_iterations = 0
+
+  while True:
+    if num_iterations % 100 == 0:
+      print "ITERATION #: ", num_iterations
+
+    y = classify(X, w)
+    error_indexes = copy.copy(np.where(y != y_true)[0]) # take first element because that contains the indices
+  
+    if len(error_indexes) > 0:
+      np.random.shuffle(error_indexes)
+      chosen_index = error_indexes[0]
+      w = w + y_true[chosen_index] * X[chosen_index, :].T
+      num_iterations += 1
+    else:
+      break
+
+    if plot:
+      plot_points(X, coeff, w)
+
+  print num_iterations
+
+  return num_iterations
+
+def plot_points(X, coeff, w, y):
+  return
+
+def average_PLA_iterate(number_of_iterations=1, num_training_points=10):
   iterations = 0
 
   for iter in xrange(number_of_iterations):
@@ -106,4 +154,5 @@ def PLA_iterate(num_training_points=10):
   return num_iterations
 
 if __name__ == '__main__':
-  average_PLA_iterate(1000, 10)
+  # average_PLA_iterate(1000, 10)
+  get_average_num_iterations(10, 10)
