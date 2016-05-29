@@ -2,6 +2,14 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 
+def generate_dataset(num_of_points=10):
+  X = np.ones((num_of_points, 1)) # these are 1 because of x0 = 1 for the constant term
+  X = np.c_(X, (np.random.uniform(-1, 1, (num_of_points, 2))))
+  return X
+
+def classify(X, w, y=None):
+  return np.sign(np.dot(X, w))
+
 def average_PLA_iterate(number_of_iterations=1 , num_training_points=10):
   iterations = 0
 
