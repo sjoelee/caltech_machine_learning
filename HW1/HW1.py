@@ -11,19 +11,18 @@ def generate_dataset(num_of_points=10):
 def classify(X, w, y=None):
   return np.sign(np.dot(X, w))
 
-def get_average_num_iterations(num_runs=1, num_training_points=10, plot=False):
+def get_average_num_iterations(num_runs=1, num_training_points=10, num_test_points=1000, plot=False):
   num_iteration = np.zeros((num_runs, 1))
+  num_prob = np.zeros((num_runs, 1))
   index = 0
 
-  run_number = 0
-  while run_number < num_runs:
-    num_iteration[index] = iterate(num_training_points, plot)
+  while index < num_runs:
+    num_iteration[index], num_prob[index] = iterate(num_training_points, num_test_points, plot)
     index += 1
-    run_number += 1
 
-  return np.sum(num_iteration)/num_runs
+  return np.sum(num_iteration)/num_runs, np.sum(num_prob)/num_runs
 
-def iterate(num_training_points=10, plot=False):
+def iterate(num_training_points, num_test_points, plot):
   # create target function and training set
   coeff = np.random.uniform(-1, 1, (3, 1))
   X = generate_dataset(num_training_points)
@@ -50,10 +49,16 @@ def iterate(num_training_points=10, plot=False):
       print("CONVERGED at ", num_iterations)
       break
 
+  # test how well w classifies the training points
+  X_test = generate_dataset(num_test_points)
+  y_true = classify(X_test, coeff)
+  y = classify(X_test, w)
+  sample_prob = np.sum(y != y_true)/float(num_test_points)
+
   if plot:
     plot_points(X, coeff, w)
 
-  return num_iterations
+  return num_iterations, sample_prob
 
 def plot_points(X, coeff, w):
   x = np.arange(-2, 2, 0.2)
@@ -74,5 +79,6 @@ def plot_points(X, coeff, w):
   return
 
 if __name__ == '__main__':
-  average_num = get_average_num_iterations(1000, 10)
+  average_num, prob_of_error = get_average_num_iterations(1000, 100, 1000)
   print "AVERAGE # ", average_num
+  print "Probability of Error ", prob_of_error
