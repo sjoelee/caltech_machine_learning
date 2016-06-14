@@ -12,24 +12,27 @@ def classify(X, w, y=None):
   return np.sign(np.dot(X, w))
 
 def get_average_num_iterations(num_runs=1, num_training_points=10, num_test_points=1000, plot=False):
-  num_iteration = np.zeros((num_runs, 1))
-  num_prob = np.zeros((num_runs, 1))
+  num_iteration = 0
+  num_prob = 0
   index = 0
 
   while index < num_runs:
-    num_iteration[index], num_prob[index] = iterate(num_training_points, num_test_points, plot)
+    num_iteration_index, num_prob_index = iterate(num_training_points, num_test_points, plot)
+    num_iteration += num_iteration_index
+    num_prob += num_prob_index
     index += 1
 
-  return np.sum(num_iteration)/num_runs, np.sum(num_prob)/num_runs
+  return num_iteration/num_runs, num_prob/num_runs
 
-def iterate(num_training_points, num_test_points, plot):
+def iterate(num_training_points, num_test_points, plot, w=None):
   # create target function and training set
   coeff = np.random.uniform(-1, 1, (3, 1))
   X = generate_dataset(num_training_points)
   y_true = classify(X, coeff)
 
   # initialize weights
-  w = np.zeros((3, 1))
+  if w is None:
+    w = np.zeros((3, 1))
   num_iterations = 0
 
   while True:
@@ -46,7 +49,6 @@ def iterate(num_training_points, num_test_points, plot):
       
       num_iterations += 1
     else:
-      print("CONVERGED at ", num_iterations)
       break
 
   # test how well w classifies the training points
